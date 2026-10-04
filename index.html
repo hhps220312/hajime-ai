@@ -9,16 +9,26 @@
 <body>
     <div class="chat-container">
         <h1>マイAIアシスタント</h1>
-        <div id="chat-box" class="chat-box"></div>
         
-        <div class="input-area">
-            <button id="mic-btn">🎤 音声入力</button>
-            <input type="text" id="user-input" placeholder="メッセージを入力...">
-            <button id="send-btn">送信</button>
+        <!-- APIキー入力エリア (初回だけ表示されます) -->
+        <div id="api-key-area" class="api-key-area">
+            <p>最初にGemini APIキーを設定してください</p>
+            <input type="password" id="api-key-input" placeholder="APIキーを貼り付け">
+            <button id="save-key-btn">設定する</button>
+            <p class="note">※キーはあなたのブラウザ内にのみ保存され、GitHub上には公開されません（安全です）</p>
+        </div>
+
+        <!-- チャットエリア (最初は隠れています) -->
+        <div id="chat-area" style="display: none;">
+            <div id="chat-box" class="chat-box"></div>
+            <div class="input-area">
+                <button id="mic-btn">🎤 音声</button>
+                <input type="text" id="user-input" placeholder="メッセージを入力...">
+                <button id="send-btn">送信</button>
+            </div>
         </div>
     </div>
     
-    <!-- Gemini APIと通信するための設定 -->
     <script type="importmap">
       {
         "imports": {
