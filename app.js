@@ -1,68 +1,105 @@
 import { GoogleGenAI } from '@google/genai';
 
-// ★準備: Google AI Studioで取得したAPIキーをここに入れます
-// 注意: GitHubに公開する際は、このキーをそのまま書くと危険なので、後でFirebaseに隠す方法を教えます。今はテスト用です。
-const API_KEY = "ここにあなたのAPIキーを貼り付けます"; 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+let ai; // AIの準備用変数
 
+// 画面の要素を取得
+const apiKeyArea = document.getElementById('api-key-area');
+const chatArea = document.getElementById('chat-area');
+const apiKeyInput = document.getElementById('api-key-input');
+const saveKeyBtn = document.getElementById('save-key-btn');
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const micBtn = document.getElementById('mic-btn');
 
-// --- 音声入力の設定 (Web Speech API) ---
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-recognition.lang = 'ja-JP';
-recognition.interimResults = false;
+// --- 1. APIキーの設定処理 ---
+// ブラウザに保存されたキーがすでにあるか確認
+const savedKey = localStorage.getItem('my_gemini_api_key');
+if (savedKey) {
+    initAI(savedKey);
+}
 
-micBtn.addEventListener('click', () => {
-    recognition.start();
-    micBtn.textContent = "🎙️ 聞き取り中...";
-    micBtn.classList.add('listening');
+// 保存ボタンを押したときの処理
+saveKeyBtn.addEventListener('click', () => {
+    const key = apiKeyInput.value.trim();
+    if (key) {
+        localStorage.setItem('my_gemini_api_key', key); // ブラウザに安全に保存
+        initAI(key);
+    }
 });
 
-recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    userInput.value = transcript;
-    micBtn.textContent = "🎤 音声入力";
-    micBtn.classList.remove('listening');
-};
+// AIを起動する関数
+function initAI(key) {
+    ai = new GoogleGenAI({ apiKey: key });
+    apiKeyArea.style.display = 'none'; // キー入力欄を隠す
+    chatArea.style.display = 'block';  // チャット画面を出す
+}
 
-// --- Gemini API (AIの脳みそ) との通信 ---
+// --- 2. 音声入力の設定 (Web Speech API) ---
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition;
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.interimResults = false;
+
+    micBtn.addEventListener('click', () => {
+        recognition.start();
+        micBtn.textContent = "🎙️ 聞き取り中...";
+        micBtn.classList.add('listening');
+    });
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript;
+        micBtn.textContent = "🎤 音声";
+        micBtn.classList.remove('listening');
+    };
+    
+    recognition.onerror = () => {
+        micBtn.textContent = "🎤 音声";
+        micBtn.classList.remove('listening');
+    };
+} else {
+    micBtn.style.display = 'none'; // ブラウザが音声入力非対応の場合はボタンを隠す
+}
+
+// --- 3. AIとの通信 ---
 async function generateAIResponse(text) {
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash', // 最新の高速・高性能モデル
+            model: 'gemini-2.5-flash',
             contents: text,
         });
         return response.text;
     } catch (error) {
         console.error(error);
-        return "エラーが発生しました。APIキーが正しいか確認してください。";
+        // エラーが出た場合はAPIキーをリセットして再入力を促す
+        localStorage.removeItem('my_gemini_api_key');
+        apiKeyArea.style.display = 'block';
+        chatArea.style.display = 'none';
+        return "エラーが発生しました。APIキーが間違っている可能性があります。もう一度設定してください。";
     }
 }
 
-// --- 画面にメッセージを表示する処理 ---
+// 画面にメッセージを表示
 function addMessageToChat(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message');
     msgDiv.classList.add(sender === 'user' ? 'user-msg' : 'ai-msg');
     msgDiv.textContent = text;
     chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.scrollTop = chatBox.scrollHeight; // 一番下にスクロール
 }
 
-// --- 送信ボタンを押したときの処理 ---
+// 送信ボタンの処理
 sendBtn.addEventListener('click', async () => {
     const text = userInput.value.trim();
     if (!text) return;
 
-    // 1. ユーザーの入力を画面に表示
     addMessageToChat(text, 'user');
     userInput.value = '';
 
-    // 2. 「考え中...」と表示
     const loadingId = Date.now();
     const loadingDiv = document.createElement('div');
     loadingDiv.id = `loading-${loadingId}`;
@@ -70,10 +107,15 @@ sendBtn.addEventListener('click', async () => {
     loadingDiv.textContent = "考え中...";
     chatBox.appendChild(loadingDiv);
 
-    // 3. AIにリクエストを送る
     const aiResponseText = await generateAIResponse(text);
 
-    // 4. 「考え中...」を消して、AIの回答を表示
     document.getElementById(`loading-${loadingId}`).remove();
     addMessageToChat(aiResponseText, 'ai');
+});
+
+// Enterキーでも送信できるようにする
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendBtn.click();
+    }
 });
