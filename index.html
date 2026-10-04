@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイオリジナルAI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <h1>マイAIアシスタント</h1>
+        <div id="chat-box" class="chat-box"></div>
+        
+        <div class="input-area">
+            <button id="mic-btn">🎤 音声入力</button>
+            <input type="text" id="user-input" placeholder="メッセージを入力...">
+            <button id="send-btn">送信</button>
+        </div>
+    </div>
+    
+    <!-- Gemini APIと通信するための設定 -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.run/@google/genai"
+        }
+      }
+    </script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
