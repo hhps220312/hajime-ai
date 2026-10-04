@@ -13,6 +13,31 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     padding: 20px;
 }
+h1 {
+    text-align: center;
+    font-size: 1.5em;
+    margin-top: 0;
+}
+/* APIキー設定画面のデザイン */
+.api-key-area {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.api-key-area input {
+    width: 80%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.note {
+    font-size: 0.8em;
+    color: #666;
+}
+/* チャット画面のデザイン */
 .chat-box {
     height: 400px;
     overflow-y: auto;
@@ -26,20 +51,23 @@ body {
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
+    line-height: 1.4;
 }
 .user-msg {
     background: #d1e7dd;
     text-align: right;
+    margin-left: 20%;
 }
 .ai-msg {
     background: #e2e3e5;
     text-align: left;
+    margin-right: 20%;
 }
 .input-area {
     display: flex;
     gap: 10px;
 }
-input {
+.input-area input {
     flex-grow: 1;
     padding: 10px;
     border: 1px solid #ccc;
@@ -52,6 +80,7 @@ button {
     cursor: pointer;
     background-color: #0d6efd;
     color: white;
+    white-space: nowrap;
 }
 #mic-btn {
     background-color: #dc3545;
